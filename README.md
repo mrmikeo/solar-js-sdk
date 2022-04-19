@@ -1,0 +1,814 @@
+# Solar SDK
+
+<p align="center">
+    <img src="https://github.com/solar-network/solar-js-sdk/blob/master/banner.jpg" />
+</p>
+
+
+[Telegram](https://t.me/nayiem)
+
+A Promised NodeJS Module for connecting with the Solar v2 API
+
+
+## Install via npm
+
+```
+npm install --save https://github.com/solar-network/solar-js-sdk
+
+```
+
+## Example Code
+
+```
+const solarSdk = require("solar-js-sdk");
+
+# Testnet
+const solarApiTest = new solarSdk.solarApi('http://65.21.252.34:6003/api');
+
+# Default Mainnet
+const solarApi = new solarSdk.solarApi();
+
+(async () => {
+
+	  var blockheight = await solarApiTest.getBlockHeight();
+
+	  console.log("Testnet BlockHeight: " + blockheight);
+	  
+	  var blockheight2 = await solarApi.getBlockHeight();
+
+	  console.log("Mainnet BlockHeight: " + blockheight2);
+
+})();
+```
+
+Jump To [solarApi Methods](#solar-api-methods-solarapi)  
+Jump To [Common JSON Objects](#common-json-object-types)  
+
+# Solar Api Methods (solarApi)
+
+## getNewAddress
+**Method**  
+`solarApi.getNewAddress()`
+
+**Returns**  
+New Address Object:
+```
+{
+	recipientId: "*address*",
+	pubkey: "*public key*",
+	privkey: "*private key*",
+	mnemonic: "*mnemonic phrase*"
+}
+```
+
+## validateAddress
+**Method**  
+`solarApi.validateAddress(address)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|address|string|Solar address to validate  |
+
+**Returns**  
+true, false, or error (false)
+
+## buildTransaction
+**Method**  
+`solarApi.buildTransaction(receiverAddress, amount, memo, passPhrase, secondPassphrase = null, feeOverride = null)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|receiverAddress|string|Solar address to send to  |
+|amount|int|Amount in solar units (ie, 1 SXP = 100000000 solar units)  |
+|memo|string|Up to 255 characters which will be placed into VendorField  |
+|passPhrase|string|Senders mnemonic passphrase  |
+|secondPassphrse|string|Senders second mnemonic passphrase (if enabled)  |
+|feeOverride|int|Override default fee settings with new value.  Value is in solar units, ie 0.02SXP = 2000000|
+
+**Returns**  
+signed transaction object 
+
+## getApiUrl
+**Method**  
+`solarApi.getApiUrl()`
+
+**Returns**  
+Current endpoint url, such as "https://sxp.mainnet.sh/api"
+
+## getBlockChain
+**Method**  
+`solarApi.getBlockChain()`
+
+**Returns**  
+General blockchain information:
+```
+{
+  "data":{
+    "block":{
+      "height":569492,
+        "id":"6e11a01f00dcee07ee1cee93a5cbdc6d76b744307d283bdfd20ad60afd7dd07a"
+      },
+    "supply":"42567693025000000"
+  }
+}
+```
+
+## listBlocks
+**Method**  
+`solarApi.listBlocks(page, limit, id, height, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|(default 1) The number of the page that will be returned|
+|limit|int|(default 100) The number of resources per page|
+|id|string|(default null) The id number of the block to be retrieved|
+|height|int|(default null) The height of the block to be retrieved|
+|orderBy|string|(default 'timestamp:desc') The column by which the resources will be sorted|
+
+The orderBy parameter supports the following values: id, height, previous_block, payload_hash, generator_public_key, timestamp
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Block Objects](#block-object)
+
+## getBlockByHeight
+**Method**  
+`solarApi.getBlockByHeight(height)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|height|int|block height to retrieve information for|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Block Object](#block-object)
+
+## getBlockByID
+**Method**  
+`solarApi.getBlockByID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|block id to retrieve information for|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Block Object](#block-object)
+
+## getLastBlock
+**Method**  
+`solarApi.getLastBlock()`
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Block Object](#block-object) of last created block
+
+## getTransactionsByBlockID
+**Method**  
+`solarApi.getTransactionsByBlockID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|block id to retrieve transaction list from|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: array of [Transaction Objects](#transaction-object)
+
+## searchBlocks
+**Method**  
+`solarApi.searchBlocks(page, limit, body)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+
+body is a json object which can contain any of the following:
+
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|ID of the block.|
+|version|int|Version of the block.|
+|previousBlock|int|ID of the previous block.|
+|payloadHash|string|Hash of the payload.|
+|generatorPublicKey|string|Public key of the forger who forged the block.|
+|blockSignature|string|Signature of the block.|
+|timestamp|object|Timestamp range for block creation time. Measured in number of seconds since the genesis block.|
+|timestamp.from|int|Block creation time must be bigger or equal to this.|
+|timestamp.to|int|Block creation time must be smaller or equal to this.|
+|height|object|Height range of the block. The genesis block has height 1.|
+|height.from|int|Block height must be bigger or equal to this.|
+|height.to|int|Block height must be smaller or equal to this.|
+|numberOfTransactions|object|Ranage for number of transactions contained in the block.|
+|numberOfTransactions.from|int|The number of transactions in the block must be bigger or equal to this.  |
+|numberOfTransactions.to|int|The number of transactions in the block must be smaller or equal to this.  |
+|totalAmount|object|Range for total amount transacted in the block, including block reward, transaction fees and transactions' amounts. In satoshi. |
+|totalAmount.from|int|Block total amount must be bigger or equal to this.  |
+|totalAmount.to|int|Block total amount must be smaller or equal to this.  |
+|totalFee|object|Range for the sum of all transactions' fees in the block. In satoshi.  |
+|totalFee.from|int|The sum of all transactions' fees in the block must be bigger or equal to this.  |
+|totalFee.to|int|The sum of all transactions' fees in the block must be smaller or equal to this.  |
+|reward|object|Range for block reward. In satoshi.  |
+|reward.from|int|Block reward must be bigger or equal to this.  |
+|reward.to|int|Block reward must be smaller or equal to this.  |
+|payloadLength|object|Range for block payload length. In bytes.  |
+|payloadLength.from|int|Block payload length must be bigger or equal to this.  |
+|payloadLength.to|int|Block payload length must be smaller or equal to this.  |
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of matching [Block Object](#block-object)
+
+## listDelegates
+**Method**  
+`solarApi.listDelegates(page, limit, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.  |
+|limit|int|The number of resources per page.  |
+|orderBy|string|The column by which the resources will be sorted.|
+
+orderBy valid fields:  username, rank, votes
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Delegate Objects](#delegate-object)
+
+## getDelegate
+**Method**  
+`solarApi.getDelegate(identifier)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|identifier|string|{username|address|publicKey}|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Delegate Object](#delegate-object)
+
+## getDelegateBlocks
+**Method**  
+`solarApi.getDelegateBlocks(identifier, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.  |
+|limit|int|The number of resources per page.  |
+|identifier|string|(REQUIRED) {username|address|publicKey}|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of matching [Block Object](#block-object)
+
+## getDelegateVoters
+**Method**  
+`solarApi.getDelegateVoters = function(identifier, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.  |
+|limit|int|The number of resources per page.  |
+|identifier|string|(REQUIRED) {username|address|publicKey}|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of voter objects
+
+## searchDelegates
+**Method**  
+`solarApi.searchDelegates(page, limit, body)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+
+body is a json object which can contain any of the following:
+
+|Name|Type|Description|
+|----|-----|-------| 
+|address|string|The address of the delegate to be retrieved.|
+|publicKey|string|The public key of the delegate to be retrieved.|
+|username|string|The username of the delegate to be retrieved.|
+|usernames|array|The usernames of the delegates to be retrieved.|
+|approval|object|The approval rate of the delegates to be retrieved.|
+|approval.from|float|The lower limit of the approval rate.|
+|approval.to|float|The upper limit of the approval rate.|
+|forgedFees|object|The forged fees of the delegates to be retrieved.|
+|forgedFees.from|int|The lower limit of the forged fees.|
+|forgedFees.to|int|The upper limit of the forged fees.|
+|forgedRewards|object|The forged rewards of the delegates to be retrieved.|
+|forgedRewards.from|int|The lower limit of the forged rewards.|
+|forgedRewards.to|int|The upper limit of the forged rewards.|
+|forgedTotal|object|The forged total of the delegates to be retrieved.|
+|forgedTotal.from|int|The lower limit of the forged total.|
+|forgedTotal.to|int|The upper limit of the forged total.|
+|producedBlocks|object|The produced blocks count of the delegates to be retrieved.|
+|producedBlocks.from|int|The lower limit of the produced blocks count.|
+|producedBlocks.to|int|The upper limit of the produced blocks count.|
+|voteBalance|object|The vote balance of the delegates to be retrieved.|
+|voteBalance.from|int|The lower limit of the vote balance.|
+|voteBalance.to|int|The upper limit of the vote balance.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of matching [Delegate Objects](#delegate-object)
+
+## getNodeConfig
+**Method**  
+`solarApi.getNodeConfig()`
+
+**Returns**  
+node configuration object
+
+## getNodeCryptoConfig
+**Method**  
+`solarApi.getNodeCryptoConfig`
+
+**Returns**  
+node crypto configuration object
+
+## getNodeFeeStats
+**Method**  
+`solarApi..getNodeFeeStats()`
+
+**Returns**  
+fee statistics object
+
+## getNodeStatus
+**Method**  
+`solarApi.getNodeStatus()`
+
+**Returns**  
+node status object
+
+## getNodeSyncStatus
+**Method**  
+`solarApi.getNodeSyncStatus()`
+
+**Returns**  
+node sync status information
+
+## getPeers
+**Method**  
+`solarApi.getPeers(page, limit, port, status, os, version, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+|port|int|The port by which the resources will be filtered.|
+|status|string|The status by which the resources will be filtered.|
+|os|string|The operating system by which the resources will be filtered.|
+|version|string|The node version by which the resources will be filtered.|
+|orderBy|string|The column by which the resources will be sorted.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Peer Objects](#peer-object)
+
+## getPeerByIP
+**Method**  
+`solarApi.getPeerByIP(ip)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|ip|string|IP address of peer|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Peer Object](#peer-object)
+
+## createTransaction
+**Method**  
+`solarApi.createTransaction(transactions)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|transactions|array|Array of signed transaction objects to send for confirmation|
+
+**Returns**  
+transaction result object
+
+## getTransactionByID
+**Method**  
+`solarApi.getTransactionByID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|Transaction ID to retrieve|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Transaction Object](#transaction-object)
+
+## listTransactions
+**Method**  
+`solarApi.listTransactions(page, limit, type, blockId, id, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+|type|int|The transaction type to be retrieved.|
+|blockId|int|The block id to be retrieved.|
+|id|int|The transaction id to be retrieved.|
+|orderBy|string|The column by which the resources will be sorted.|
+            
+The orderBy parameter supports the following values: id, block_id, type, version, timestamp, amount, fee
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of matching [Transaction Objects](#transaction-object)
+
+## listUnconfirmedTransactions
+**Method**  
+`solarApi.listUnconfirmedTransactions(page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of unconfirmed [Transaction Objects](#transaction-object)
+
+## getUnconfirmedTransactionByID
+**Method**  
+`solarApi.getUnconfirmedTransactionByID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|The transaction id.|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: [Transaction Object](#transaction-object)
+
+## searchTransactions
+**Method**  
+`solarApi.searchTransactions(page, limit, body)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+
+body is a json object containing any of the following:
+
+|Name|Type|Description|
+|----|-----|-------| 
+|orderBy|string|The field in which to order the results|
+|id|string|Transaction id|
+|blockId|string|Block id|
+|type|int|Transaction type|
+|version|int|Transaction version|
+|senderPublicKey|string|Sender public key|
+|senderId|string|Sender address|
+|recipientId|string|Recipient address|
+|ownerId|string|...|
+|vendorFieldHex|string|...|
+|timestamp|object|Timestamp|
+|timestamp.from|int|Seconds in epoch time|
+|timestamp.to|int|Seconds in epoch time|
+|amount|object|Amount|
+|amount.from|int|Amount in satoshis|
+|amount.to|int|Amount in satoshis|
+|fee|object|Fee|
+|fee.from|int|Fee in satoshis|
+|fee.to|int|Fee in satoshis|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Transaction Objects](#transaction-object)
+
+## getTransactionTypes
+**Method**  
+`solarApi.getTransactionTypes()`
+
+**Returns**  
+list of available transaction types
+
+## getTransactionFees
+**Method**  
+`solarApi.getTransactionFees()`
+
+**Returns**  
+List of fees incurred for each type of transaction
+
+## listVotes
+**Method**  
+`solarApi.listVotes(page, limit, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+|orderBy|string|The column by which the resources will be sorted.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of vote [Transaction Objects](#transaction-object)
+
+## getVoteByID
+**Method**  
+`solarApi.getVoteByID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|Transaction id of the vote to be retrieved|
+
+**Returns**  
+[Meta Object](#meta-object) with data field of: vote [Transaction Object](#transaction-object)
+
+## listWallets
+**Method**  
+`solarApi.listWallets(page, limit, orderBy)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+|orderBy|string|The column by which the resources will be sorted.|
+      
+The orderBy parameter supports the following values: address, balance, username, vote
+ 
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Wallet Objects](#wallet-object)
+
+## getWalletByID
+**Method**  
+`solarApi.getWalletByID(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|Address or public key of wallet|
+
+**Returns**  
+data field of: [Wallet Object](#wallet-object)
+
+## getWalletBalance
+**Method**  
+`solarApi.getWalletBalance(id)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|Address or public key of wallet|
+
+**Returns**  
+Balance in human readable form (ie. NOT in satoshis, but in decimal format)
+
+## getWalletTransactions
+**Method**  
+`solarApi.getWalletTransactions(id, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|(REQUIRED) The identifier of the wallet to be retrieved (either publicKey or address)|
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Transaction Objects](#transaction-object)
+
+## getWalletReceivedTransactions
+**Method**  
+`solarApi.getWalletReceivedTransactions(id, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|(REQUIRED) The identifier of the wallet to be retrieved (either publicKey or address)|
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Transaction Objects](#transaction-object)
+
+## getWalletSentTransactions
+**Method**  
+`solarApi.getWalletSentTransactions(id, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|(REQUIRED) The identifier of the wallet to be retrieved (either publicKey or address)
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Transaction Objects](#transaction-object)
+
+## getWalletVotes
+**Method**  
+`solarApi.getWalletVotes(id, page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|id|string|(REQUIRED) The identifier of the wallet to be retrieved (either publicKey or address)|
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of vote [Transaction Objects](#transaction-object)
+
+## getTopWallets
+**Method**  
+`solarApi.getTopWallets(page, limit)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Wallet Objects](#wallet-object)
+
+## searchWallets
+**Method**  
+`solarApi.searchWallets(page, limit, body)`
+
+**Inputs**  
+|Name|Type|Description|
+|----|-----|-------| 
+|page|int|The number of the page that will be returned.|
+|limit|int|The number of resources per page.|
+
+** body is a json object
+
+|Name|Type|Description|
+|----|-----|-------| 
+|address|string|Address to search|
+|publicKey|string|public key to search|
+|secondPublicKey|string|Second public key|
+|vote|string|Voting for which delegate|
+|username|string|Username, if set|
+|balance|object|Balance|
+|balance.from|int|Amount in satoshis|
+|balance.to|int|Amount in satoshis|
+|votebalance|object|Amount|
+|votebalance.from|int|Amount in satoshis|
+|votebalance.to|int|Amount in satoshis|
+            
+**Returns**  
+[Meta Object](#meta-object) with data field of: Array of [Wallet Objects](#wallet-object)
+
+
+
+# Common JSON Object Types
+
+## Meta Object
+```
+{
+	totalCountIsEstimate: false,
+	count: 100,
+	pageCount: 2,
+	totalCount: 129,
+	next: "/delegates?page=2&limit=100",
+	previous: null,
+	self: "/delegates?page=1&limit=100",
+	first: "/delegates?page=1&limit=100",
+	last: "/delegates?page=2&limit=100"
+}
+```
+
+## Block Object
+```
+{	
+	id:"6e3784bed06b5c1581d5b78787ac587e1396ff58a2acef4d4b713f50ccea4cbe",
+	version:0,
+	height:569534,
+	previous:"73b17a8a6043798b47df07780466f992727753f4b9091149c16e6c8b2bdea97a",
+	forged: {
+		reward:"1162500000",
+		fee:"0",
+		amount:"0",
+		total:"1162500000",
+	},
+	payload: {
+		hash:"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+		length:0
+	},
+	generator: {	
+		username:"beta106",
+		address:"D9DGVfuoyLWkG7h2iH8HnWM3kFTd28H3cp",
+		publicKey:"021ea11edbe1d10af043c4bb17506d4ed623ab05eb042d6ba40c8da06e5cbd7405"
+	},
+	signature:"3044022066a163bfaa2385cf86c6cf8adbabf4126ea77cb66feb761430a52a91928ff2c4022040e09563400f54f8a69136f842567d6c646d4d87a9d9fa7e428583c63e3985b4",
+	confirmations:1,
+	transactions:0,
+	timestamp: {
+		epoch:5205688,
+		unix:1645423288,
+		human:"2022-02-21T06:01:28.000Z"
+	}
+}
+```
+
+## Transaction Object
+```
+{
+	id: "b759389e6010759abf0c9c0f7b8762529f072997e6595ef46921b48dac7d2eb5",
+	blockId: "cf2c33b24ae8ea1a96128c4b3b2f2e80030588bb6c2d2408a496e200c9d6da7a",
+	version: 2,
+	type: 0,
+	typeGroup: 1,
+	amount: "10000000000",
+	fee: "1000000",
+	sender: "D5YUm8iAiZiNCMo8boPKa94x4t1QNVQwDf",
+	senderPublicKey: "0347163bcaeac803c552f36f55c0353e4c90e05788bcf0204ad27c8291243ae5be",
+	recipient: "DCLu9eSjTtbrb7wBXHvneVz4mFbHzFnj7m",
+	signature: "06f82ebf4750cb7f347da853968432f688741c2cb0de18516faf4feec9b837ee9885b835eb74012c976c222748bb7408d9b49fc48399489cbebf7dc8f402f0bd",
+	vendorField: "friendsoflittleyus telegram faucet",
+	confirmations: 2068,
+	timestamp: {
+		epoch: 5201832,
+		unix: 1645419432,
+		human:" 2022-02-21T04:57:12.000Z"
+	},
+	nonce: "620"
+}
+```
+
+## Peer Object
+```
+{
+	ip: "65.21.177.89",
+	port: 6002,
+	ports: {
+		@arkecosystem/core-api: 6003,
+		@arkecosystem/core-webhooks: -1
+	},
+	version: "3.1.1-next.3",
+	height: 38999,
+	latency: 27,
+	plugins: {
+		@arkecosystem/core-api: {
+			port: 6003,
+			enabled: true,
+			estimateTotalCount: true
+		}
+		@arkecosystem/core-webhooks: {
+			port: 6004,
+			enabled: false
+		}
+	}
+}
+```
+
+## Wallet Object
+```
+{
+	address: "D5YUm8iAiZiNCMo8boPKa94x4t1QNVQwDf",
+	publicKey: "0347163bcaeac803c552f36f55c0353e4c90e05788bcf0204ad27c8291243ae5be",
+	balance: "5723659663",
+	nonce: "739",
+	attributes: {
+		vote: "03a69af136f6a861b9f7d3412582a1a24df27b372e8933065109cedf9fd3c60a6d"
+	}
+}
+```
+
+### Delegate Object
+```
+{
+	username: "gym",
+	address: "DGymbo8YN2RJoa72ZJTkLfZTrh7LCTwFnx",
+	publicKey: "03ebcafb1cc44c848851352476c84d38c4fbc1b8661e13771cf4ee04324d8d170f",
+	votes: "13512389006545",
+	rank: 1,
+	isResigned: false,
+	blocks: {
+		produced: 806,
+		last: {
+			id: "ca30e02de294bdd9f8b10e9ddd1a377a57350f22c27c2f42d54c1690c6957666",
+			height: 39065,
+			timestamp: {
+				epoch: 351024,
+				unix: 1646011824,
+				human: "2022-02-28T01:30:24.000Z"
+			},
+		},
+	},
+	production: {
+		approval: 0.03
+	},
+	forged: {
+		fees: "428511780",
+		rewards: "545675000000",
+		total: "546103511780"
+	}
+}
+```
