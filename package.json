@@ -8,7 +8,7 @@
         "url": "git+https://github.com/solar-network/solar-js-sdk.git"
     },
     "dependencies": {
-        "@solar-network/crypto": "^3.2.1",
+        "@solar-network/crypto": "^3.3.0",
         "big.js": "^5.2.2",
         "bip39": "^3.0.4",
         "request": "^2.88.0"
